@@ -21,3 +21,4 @@ C:\Users\mogir\CampusRouteLab\obj\Debug\net8.0\refint\CampusRouteLab.dll
 C:\Users\mogir\CampusRouteLab\obj\Debug\net8.0\CampusRouteLab.pdb
 C:\Users\mogir\CampusRouteLab\obj\Debug\net8.0\CampusRouteLab.genruntimeconfig.cache
 C:\Users\mogir\CampusRouteLab\obj\Debug\net8.0\ref\CampusRouteLab.dll
+C:\Users\mogir\CampusRouteLab\obj\Debug\net8.0\CampusRouteLab.sourcelink.json

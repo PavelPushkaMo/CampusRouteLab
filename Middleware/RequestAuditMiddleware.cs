@@ -7,14 +7,12 @@ public class RequestAuditMiddleware
     private readonly RequestDelegate _next;
     private readonly IAppInfoService _appInfoService;
 
-    // Singleton сервис можно получать через конструктор
     public RequestAuditMiddleware(RequestDelegate next, IAppInfoService appInfoService)
     {
         _next = next;
         _appInfoService = appInfoService;
     }
 
-    // Scoped и Transient сервисы получаем через параметры InvokeAsync!
     public async Task InvokeAsync(
         HttpContext context,
         IRequestContextService requestContextService,
@@ -27,25 +25,19 @@ public class RequestAuditMiddleware
         Console.WriteLine($"[Audit] TransientId: {transientMarkerService.MarkerId}");
         Console.WriteLine($"[Audit] AppInstanceId: {_appInfoService.AppInstanceId}");
 
-        // Сохраняем информацию для добавления в заголовки после выполнения
-        var requestId = requestContextService.RequestId;
-        var transientId = transientMarkerService.MarkerId;
-        var appInstanceId = _appInfoService.AppInstanceId;
+        // ДОБАВЛЯЕМ ЗАГОЛОВКИ ДО ВЫЗОВА next()
+        // (пока ответ еще не начат)
+        context.Response.Headers.Append("X-App-Instance", _appInfoService.AppInstanceId.ToString());
+        context.Response.Headers.Append("X-Request-Id", requestContextService.RequestId.ToString());
+        context.Response.Headers.Append("X-Transient-Id", transientMarkerService.MarkerId.ToString());
 
         // Выполняем следующий middleware
         await _next(context);
-
-        // Добавляем диагностические заголовки в ответ
-        context.Response.Headers.Append("X-App-Instance", appInstanceId.ToString());
-        context.Response.Headers.Append("X-Request-Id", requestId.ToString());
-        context.Response.Headers.Append("X-Transient-Id", transientId.ToString());
 
         // Для запросов в раздел /diag выводим дополнительную информацию
         if (context.Request.Path.StartsWithSegments("/diag"))
         {
             Console.WriteLine($"[Audit] DIAG запрос: {context.Request.Path}");
-            Console.WriteLine($"[Audit] Scoped RequestId: {requestId}");
-            Console.WriteLine($"[Audit] Transient MarkerId: {transientId}");
         }
 
         var endTime = DateTime.Now;
